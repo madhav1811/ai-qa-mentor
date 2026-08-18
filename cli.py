@@ -42,6 +42,12 @@ def render_report(result: dict) -> str:
                 f"> You've missed this category before ({gap['prior_misses_by_this_tester']} prior session(s))."
             )
             lines.append("")
+        for match in gap.get("cross_client_matches", []):
+            lines.append(
+                f"> 🌐 Cross-client pattern match ({match['score']}): {match['root_cause']} "
+                f"— triggered by {match['trigger_condition']}."
+            )
+            lines.append("")
         if gap["test_steps"]:
             lines.append("**Test steps:**")
             for step in gap["test_steps"]:

@@ -10,6 +10,7 @@
 from .stage1_requirements import extract_requirements
 from .stage2_coverage import map_coverage
 from .stage3_blindspots import find_blindspot_matches
+from .stage4_cross_client import find_cross_client_matches
 from .stage5_coaching import generate_coaching
 from .stage6_memory_update import update_memory
 from .profile_store import load_profile
@@ -21,6 +22,7 @@ def run_pipeline(docs_text: str, bug_sheet_text: str, tester: str, project: str,
     requirements = extract_requirements(docs_text, model=model)
     coverage = map_coverage(requirements, bug_sheet_text, model=model)
     annotated_coverage = find_blindspot_matches(coverage, requirements, profile)
+    annotated_coverage = find_cross_client_matches(annotated_coverage, requirements)
     coaching = generate_coaching(annotated_coverage, requirements, model=model)
     updated_profile = update_memory(tester, project, annotated_coverage, session_date)
 
@@ -42,6 +44,7 @@ def run_pipeline(docs_text: str, bug_sheet_text: str, tester: str, project: str,
                 "evidence": c.get("evidence", "none"),
                 "is_recurring_blindspot": c["is_recurring_blindspot"],
                 "prior_misses_by_this_tester": c["prior_misses_by_this_tester"],
+                "cross_client_matches": c.get("cross_client_matches", []),
                 "test_steps": coach.get("test_steps", []),
                 "reasoning": coach.get("reasoning", ""),
             }

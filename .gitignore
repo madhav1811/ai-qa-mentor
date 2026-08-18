@@ -4,3 +4,4 @@ __pycache__/
 output/
 data/profiles/*.json
 !data/profiles/.gitkeep
+data/motif_embeddings.json

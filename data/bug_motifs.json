@@ -1,0 +1,247 @@
+[
+  {
+    "id": "M01",
+    "category": "authorization",
+    "root_cause": "Removed/revoked access is not enforced server-side in real time",
+    "trigger_condition": "a user's role, team membership, or permission is revoked while they hold an active session or open connection",
+    "description": "A user who is removed from a team, role, or resource keeps working access for some time afterward because the check happens only at login/token-issue time, not on every subsequent request."
+  },
+  {
+    "id": "M02",
+    "category": "authorization",
+    "root_cause": "Missing invariant enforcement on the last privileged entity",
+    "trigger_condition": "an attempt to remove, demote, or disable the last remaining admin/owner of a resource",
+    "description": "The system allows a resource (team, project, account) to end up with zero admins/owners, leaving it unmanageable, because the 'at least one admin' rule is only enforced in the UI, not the backend."
+  },
+  {
+    "id": "M03",
+    "category": "time_windows",
+    "root_cause": "Expiry check compares against the wrong clock or is never actually evaluated",
+    "trigger_condition": "a token, link, or session is used at or after its stated expiry time",
+    "description": "A time-limited credential (reset link, invite, temporary token) continues to work well past its advertised expiry window because the expiry timestamp is stored but never checked on use."
+  },
+  {
+    "id": "M04",
+    "category": "concurrency",
+    "root_cause": "Two requests read-modify-write the same record without locking or optimistic concurrency control",
+    "trigger_condition": "two users or two tabs perform conflicting updates to the same entity at nearly the same time",
+    "description": "A race condition lets a later write silently overwrite an earlier one (lost update), or lets an invariant be violated because both requests passed a check before either committed."
+  },
+  {
+    "id": "M05",
+    "category": "state_transition",
+    "root_cause": "Terminal or exclusive states are not mutually enforced",
+    "trigger_condition": "an entity is moved into a state that should be exclusive with another state it is already in",
+    "description": "An item ends up in two contradictory states at once (e.g. both 'deleted' and 'assigned', both 'completed' and 'overdue') because the transition logic only sets the new state without clearing the old one."
+  },
+  {
+    "id": "M06",
+    "category": "validation",
+    "root_cause": "Client-side validation is not mirrored on the server",
+    "trigger_condition": "a request is sent directly to the API, bypassing the UI form validation",
+    "description": "Required fields, length limits, or format rules are enforced only in the browser and can be violated entirely by calling the API directly, corrupting stored data."
+  },
+  {
+    "id": "M07",
+    "category": "notifications",
+    "root_cause": "Notification triggers are not deduplicated or debounced",
+    "trigger_condition": "an event that fires the same notification condition multiple times in quick succession (e.g. repeated edits)",
+    "description": "Users receive duplicate notifications for what they perceive as a single action, because each underlying event independently triggers a send."
+  },
+  {
+    "id": "M08",
+    "category": "notifications",
+    "root_cause": "Scheduled reminder logic does not re-check current state before sending",
+    "trigger_condition": "the triggering condition becomes false between when a reminder is scheduled and when it fires",
+    "description": "A time-based reminder (e.g. 'due soon', 'trial ending') still sends even though the underlying condition was resolved (task completed, plan upgraded) before the send time."
+  },
+  {
+    "id": "M09",
+    "category": "soft_delete",
+    "root_cause": "Soft-deleted records remain visible or reachable through secondary paths",
+    "trigger_condition": "a record is soft-deleted (moved to trash/archive) but accessed via search, an old link, or a related-record listing",
+    "description": "An item that was 'deleted' from the primary view is still visible or actionable through an indirect route, because only the main listing query filters it out."
+  },
+  {
+    "id": "M10",
+    "category": "pagination",
+    "root_cause": "Pagination cursor/offset is unstable under concurrent inserts or deletes",
+    "trigger_condition": "records are added or removed while a user is paging through a list",
+    "description": "Items are skipped or duplicated across pages because the pagination approach assumes a static list, not one that mutates during traversal."
+  },
+  {
+    "id": "M11",
+    "category": "bulk_operations",
+    "root_cause": "Bulk actions are not atomic and partially fail silently",
+    "trigger_condition": "a bulk operation (bulk delete, bulk assign, bulk import) hits an error partway through the batch",
+    "description": "A bulk operation reports success or shows no clear error, but only some of the selected items were actually processed, leaving inconsistent state with no easy way to tell which succeeded."
+  },
+  {
+    "id": "M12",
+    "category": "idempotency",
+    "root_cause": "Retries of a non-idempotent action are not deduplicated",
+    "trigger_condition": "a client retries a request after a timeout or network blip, unaware the first attempt actually succeeded server-side",
+    "description": "An action that should happen once (charge a payment, send an invite, create a record) happens twice because retry logic has no idempotency key or dedup check."
+  },
+  {
+    "id": "M13",
+    "category": "cascading_delete",
+    "root_cause": "Deleting a parent entity leaves orphaned child records or dangling references",
+    "trigger_condition": "a parent object (team, project, user) with dependent child records is deleted",
+    "description": "Child records referencing a deleted parent remain in the system in a broken state, sometimes still visible in unrelated views, causing errors or confusing UI when accessed."
+  },
+  {
+    "id": "M14",
+    "category": "timezone",
+    "root_cause": "Date/time values are stored or compared without a consistent timezone",
+    "trigger_condition": "users in different timezones interact with a date-based feature (due dates, scheduling, daily reports), or a daylight-saving transition occurs",
+    "description": "Due dates, 'today' boundaries, or scheduled events shift by hours depending on the user's or server's timezone, causing items to appear overdue early/late or notifications to fire at the wrong local time."
+  },
+  {
+    "id": "M15",
+    "category": "rate_limiting",
+    "root_cause": "No limit on repeated sensitive actions from the same actor",
+    "trigger_condition": "the same user or IP repeats a sensitive action (login attempts, password reset requests, invite sends) rapidly",
+    "description": "An attacker or buggy client can hammer a sensitive endpoint with no throttling, enabling brute-force attempts or resource exhaustion."
+  },
+  {
+    "id": "M16",
+    "category": "multi_tenancy",
+    "root_cause": "A query is missing a tenant/team/account scoping filter",
+    "trigger_condition": "a user belonging to one team/account requests a resource by ID that belongs to a different team/account",
+    "description": "A user can view or modify another tenant's data by guessing or reusing an ID, because the backend checks 'does this record exist' but not 'does it belong to this requester's tenant'."
+  },
+  {
+    "id": "M17",
+    "category": "search_filtering",
+    "root_cause": "Filters and search are computed on stale or partially indexed data",
+    "trigger_condition": "a record is created, updated, or deleted and then immediately searched for or filtered on",
+    "description": "A just-changed record doesn't show up (or a just-deleted one still shows up) in search/filter results for some time, because the search index lags behind the source of truth."
+  },
+  {
+    "id": "M18",
+    "category": "form_state",
+    "root_cause": "In-progress form input is not preserved across navigation or errors",
+    "trigger_condition": "a validation error occurs, or the user navigates away and back, while filling out a multi-field form",
+    "description": "Users lose everything they typed when a single field fails validation or when they briefly navigate away, forcing them to redo the whole form."
+  },
+  {
+    "id": "M19",
+    "category": "undo_redo",
+    "root_cause": "An 'undo' or 'reopen' action does not fully restore prior dependent state",
+    "trigger_condition": "an entity is reverted from a terminal state (completed, cancelled, archived) back to an active one",
+    "description": "Reopening/undoing an action restores the primary status flag but leaves related fields (timestamps, assignments, notifications already sent) in a stale or contradictory state."
+  },
+  {
+    "id": "M20",
+    "category": "file_upload",
+    "root_cause": "File size/type limits are enforced client-side only, or inconsistently across upload paths",
+    "trigger_condition": "a file is uploaded through an alternate path (drag-and-drop, API, mobile) that skips the primary upload widget's checks",
+    "description": "Oversized or wrong-type files are accepted through a secondary upload path even though the main upload form blocks them, because validation isn't centralized."
+  },
+  {
+    "id": "M21",
+    "category": "webhooks",
+    "root_cause": "Incoming webhook/callback events are trusted without verifying signature or replay protection",
+    "trigger_condition": "a third-party webhook is replayed, delayed, or delivered out of order",
+    "description": "Duplicate or forged webhook deliveries are processed as if new, causing duplicate side effects (double-crediting, duplicate notifications) or allowing spoofed events."
+  },
+  {
+    "id": "M22",
+    "category": "caching",
+    "root_cause": "A cached value is not invalidated when the underlying data changes",
+    "trigger_condition": "data is updated through one code path while another path still reads a cache populated before the update",
+    "description": "Users see stale data (old permissions, old settings, old counts) after making a change, because the cache TTL or invalidation doesn't cover every write path."
+  },
+  {
+    "id": "M23",
+    "category": "email_deliverability",
+    "root_cause": "Transactional email sending has no failure handling or user-visible status",
+    "trigger_condition": "an email fails to send or is delayed due to provider issues, bounces, or spam filtering",
+    "description": "Users assume a critical email (invite, reset link, receipt) was delivered because the app reported success, when the actual delivery silently failed downstream."
+  },
+  {
+    "id": "M24",
+    "category": "session_management",
+    "root_cause": "Session/token lifetime and 'remember me' semantics are ambiguous or inconsistent across surfaces",
+    "trigger_condition": "a user is idle for an extended period, or uses the app across web and mobile simultaneously",
+    "description": "Users are logged out unexpectedly on one surface while still logged in on another, or sessions persist far longer than the stated timeout, due to inconsistent session handling across clients."
+  },
+  {
+    "id": "M25",
+    "category": "role_hierarchy",
+    "root_cause": "Permission checks use role name equality instead of a hierarchy/capability model",
+    "trigger_condition": "a new intermediate role is introduced, or an action is checked against a specific role rather than a required capability",
+    "description": "A higher-privilege role unexpectedly cannot perform an action a lower role can, or vice versa, because the check hardcodes one role name instead of checking the underlying capability."
+  },
+  {
+    "id": "M26",
+    "category": "input_encoding",
+    "root_cause": "Unicode, emoji, or multi-byte characters are not handled consistently across storage, display, and length limits",
+    "trigger_condition": "a user enters non-ASCII text (emoji, accented characters, right-to-left scripts) into a text field",
+    "description": "Text with emoji or multi-byte characters gets truncated mid-character, miscounted against a length limit, or rendered incorrectly, because length/storage logic assumes single-byte characters."
+  },
+  {
+    "id": "M27",
+    "category": "offline_sync",
+    "root_cause": "Conflicting edits made offline are merged with a naive last-write-wins strategy",
+    "trigger_condition": "a client makes changes while offline or disconnected, then reconnects after the same record changed on the server",
+    "description": "Offline edits silently clobber newer server-side changes on reconnect (or vice versa), with no conflict surfaced to the user, because sync logic doesn't detect divergent history."
+  },
+  {
+    "id": "M28",
+    "category": "browser_navigation",
+    "root_cause": "Application state is not reconciled with the browser back/forward button",
+    "trigger_condition": "a user submits an action, then uses the browser back button and repeats a prior step",
+    "description": "Using back/forward re-submits a stale form, shows outdated data as if current, or allows repeating an action (e.g. duplicate submission) because state isn't revalidated on history navigation."
+  },
+  {
+    "id": "M29",
+    "category": "currency_rounding",
+    "root_cause": "Monetary calculations use floating point instead of fixed-point/integer arithmetic",
+    "trigger_condition": "a calculation involves splitting, discounting, or summing monetary amounts across multiple line items",
+    "description": "Totals are off by a cent or more due to floating-point rounding errors accumulating across a calculation chain, especially visible when splitting an amount across several items."
+  },
+  {
+    "id": "M30",
+    "category": "export_import",
+    "root_cause": "Export/import round-trip does not preserve all fields or relationships",
+    "trigger_condition": "data is exported (CSV/JSON) and then re-imported, or exported for external use and expected to match the source exactly",
+    "description": "An exported-then-reimported record loses relationships, formatting, or fields that exist in the UI but weren't included in the export schema, silently degrading data on round-trip."
+  },
+  {
+    "id": "M31",
+    "category": "feature_flags",
+    "root_cause": "A feature flag rollout is checked inconsistently across frontend and backend, or cached per-session",
+    "trigger_condition": "a feature flag is toggled while a user has an active session, or is evaluated differently by two parts of the same request",
+    "description": "A user sees a feature enabled in the UI but the backend rejects the associated request (or vice versa), because flag evaluation isn't consistent across layers or refreshed mid-session."
+  },
+  {
+    "id": "M32",
+    "category": "audit_logging",
+    "root_cause": "Sensitive actions are not recorded with enough context to reconstruct what happened",
+    "trigger_condition": "an investigation is needed into who did what after a disputed or unexpected change",
+    "description": "The audit trail for a sensitive action (permission change, deletion, financial transaction) is missing the actor, timestamp, or prior value, making it impossible to reconstruct after the fact."
+  },
+  {
+    "id": "M33",
+    "category": "concurrency",
+    "root_cause": "Uniqueness constraints are enforced only at the application layer, not the database layer",
+    "trigger_condition": "two near-simultaneous requests attempt to create records that should be mutually exclusive (e.g. same username, same slug)",
+    "description": "A brief race window between the app-level 'check if it exists' and 'create it' allows two conflicting records to be created, because there's no database-level unique constraint backing the check."
+  },
+  {
+    "id": "M34",
+    "category": "websocket_realtime",
+    "root_cause": "Real-time connections do not resynchronize state on reconnect",
+    "trigger_condition": "a websocket or real-time connection drops and reconnects after missing one or more update events",
+    "description": "A client's view silently diverges from the server after a dropped real-time connection, because reconnect logic resumes listening for new events without first fetching a fresh snapshot."
+  },
+  {
+    "id": "M35",
+    "category": "authorization",
+    "root_cause": "A user-facing 'my own resource' shortcut assumes ownership without re-checking it after a transfer",
+    "trigger_condition": "ownership or assignment of a resource changes after a client has cached a reference to it as 'mine'",
+    "description": "A user retains a UI shortcut or cached permission to act on a resource as if it were still theirs after it was reassigned, transferred, or unassigned from them."
+  }
+]
