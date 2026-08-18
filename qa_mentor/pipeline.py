@@ -22,7 +22,7 @@ def run_pipeline(docs_text: str, bug_sheet_text: str, tester: str, project: str,
     requirements = extract_requirements(docs_text, model=model)
     coverage = map_coverage(requirements, bug_sheet_text, model=model)
     annotated_coverage = find_blindspot_matches(coverage, requirements, profile)
-    annotated_coverage = find_cross_client_matches(annotated_coverage, requirements)
+    annotated_coverage = find_cross_client_matches(annotated_coverage, requirements, model=model)
     coaching = generate_coaching(annotated_coverage, requirements, model=model)
     updated_profile = update_memory(tester, project, annotated_coverage, session_date)
 
